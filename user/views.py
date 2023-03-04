@@ -23,13 +23,14 @@ class UserDataUpload(APIView):
   pasrser_classes = [MultiPartParser,FormParser]
 
   def post(self,request):
+    
     req = request.data
     with transaction.atomic():
       profile = Profile.objects.get(email = req["email"])
       profile.name = req["username"]
       profile.gender = req["gender"]
       profile.password = req["password"]
-      profile.image = req["image"]
+      profile.image_url = req["image"]
       profile.save()
     serializer = UserSerializer(profile,many = False)
     return Response(serializer.data)
@@ -38,6 +39,7 @@ class UserDataUpload(APIView):
 def post(request):
   req = request.data
   with transaction.atomic():
+
     profile = Profile.objects.get(email = req["email"])
     profile.name = req["username"]
     profile.gender = req["gender"]
