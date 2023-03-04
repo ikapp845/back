@@ -49,8 +49,8 @@ def post(request):
     return Response(serializer.data)
 
 def send_email(email,otp):    
-  email_sender = str(os.getenv("email_sender"))
-  email_password = str(os.getenv("email_password"))
+  email_sender = config("email_sender")
+  email_password = config("email_password")
   email_to = email
 
   subject = "OTP"
