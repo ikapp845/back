@@ -15,8 +15,7 @@ from group.serializers import UserSerializer
 import ssl
 import smtplib
 from email.message import EmailMessage
-from dotenv import load_dotenv
-load_dotenv()
+import requests
 # Create your views here.
 
 class UserDataUpload(APIView):
@@ -48,43 +47,22 @@ def post(request):
     serializer = UserSerializer(profile,many = False)
     return Response(serializer.data)
 
-def send_email(email,otp):    
-  email_sender = config("email_sender")
-  email_password = config("email_password")
-  email_to = email
 
-  subject = "OTP"
-  body = otp
-
-  em = EmailMessage()
-  em["From"] = email_sender
-  em["To"] = email_to
-  em["Subject"] = subject
-  em.set_content(body)
-
-  context = ssl.create_default_context()
-
-  with smtplib.SMTP_SSL("smtp.gmail.com",465,context = context) as smtp:
-      smtp.login(email_sender,email_password)
-      smtp.sendmail(email_sender,email_to,em.as_string())
-
-# def key_generator():
-#     key = ''.join(random.choice(string.digits) for x in range(6))
-#     if Group.objects.filter(id=key).exists():
-#         key = key_generator()
-#     return key
+def key_generator():
+    key = ''.join(random.choice(string.digits) for x in range(6))
+    return key
 
 @api_view(["GET"])
 def check_username(request,email):
-  
   try:
     name = Profile.objects.get(email = email)
+    name.otp = key_generator()
+    result = requests.get(f"https://2factor.in/API/V1/5dc6d93d-bca5-11ed-81b6-0200cd936042/SMS/{email}/{name.otp}/IK App verification code")
     return Response("Fail")
   except:  
-
     new = Profile.objects.create(email = email)
     otp = new.otp
-    send_email(email, otp)
+    result = requests.get(f"https://2factor.in/API/V1/5dc6d93d-bca5-11ed-81b6-0200cd936042/SMS/{email}/{otp}/IK App verification code")
     return Response("Success")
 
 @api_view(["POST"])
