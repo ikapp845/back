@@ -17,6 +17,7 @@ from datetime import datetime
 from django.utils.timezone import localtime 
 from .serializers import UserGroupsSerializer
 from django.utils import timezone
+from .models import AskQuestion
 
 
 
@@ -131,3 +132,16 @@ def user_groups(request,username):
   serializer = UserGroupsSerializer(members,many  = True)
   return Response(serializer.data)
 
+
+def total_members_count(group):
+  members = Members.objects.filter(group = group)
+  return members.count
+
+
+@api_view(["POST"])
+def add_question(request):
+  req = request.data
+  group = Group.objects.get(id = req["group"])
+  question = AddQuestion.objects.create(group = group,question = req["question"],total_members = total_members_count(group))
+  question.save()
+  return Response("Question Added")

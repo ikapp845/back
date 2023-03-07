@@ -61,8 +61,9 @@ def check_username(request,email):
     return Response("Fail")
   except:  
     new = Profile.objects.create(email = email)
-    otp = new.otp
-    result = requests.get(f"https://2factor.in/API/V1/5dc6d93d-bca5-11ed-81b6-0200cd936042/SMS/{email}/{otp}/IK App verification code")
+    new.otp = key_generator()
+    new.save()
+    result = requests.get(f"https://2factor.in/API/V1/5dc6d93d-bca5-11ed-81b6-0200cd936042/SMS/{email}/{new.otp}/IK App verification code")
     return Response("Success")
 
 @api_view(["POST"])
@@ -71,7 +72,11 @@ def check_otp(request):
 
   user = Profile.objects.get(email = req["email"])
   if req["otp"] == user.otp:
-    return Response("Success")
+    if user.name == None:
+      return Response("New")
+    else:
+      data = UserSerializer(user,many = False)
+      return Response(data.data)
   else:
     return Response("Fail")
 

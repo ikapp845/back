@@ -47,3 +47,11 @@ class Questionattended(models.Model):
   group = models.ForeignKey(Group,on_delete=models.CASCADE)
   question = models.ForeignKey(Question,on_delete = models.CASCADE)
   user = models.ForeignKey(Profile,on_delete = models.CASCADE)
+
+
+
+
+class AskQuestion(models.Model):
+  group = models.ForeignKey(Group, on_delete = models.CASCADE)
+  question = models.CharField(max_length = 200,null = True,blank = True)
+  total_members = models.IntegerField(null = True,blank = True)
