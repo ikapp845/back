@@ -7,8 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db import transaction
 from .models import Group
-from .models import Members
-from .models import GroupQuestion,Questionattended
+from .models import Members,AskQuestion
+from .models import GroupQuestion,Questionattended,AskQuestionAttended
 from question.models import Question
 from django.shortcuts import render
 from user.models import Profile
@@ -68,19 +68,32 @@ def compare_dates(desired,now):
   else:
     return True
 
+def get_count(group,user,question):
+  count = 10
+  ask_question = AskQuestion.objects.filter(group = group)
+  for items in ask_question:
+    try:
+      a = AskQuestionAttended.objects.get(user=user,question = items)
+    except:
+      question.append([items.question,"user"])
+      count -= 1
+  return count
+
 @api_view(["GET"])
 def group_question(request,group,username):
   gp = Group.objects.get(id = group)
   user = Profile.objects.get(email= username)
   gqs = GroupQuestion.objects.filter(group = gp)
+  question = []
   if not gqs:
-    question = Question.objects.order_by("?")[:10]
-    for items in question:
+    count = get_count(gp,user,question)
+    question1 = Question.objects.order_by("?")[:count]
+    for items in question1:
       gq = GroupQuestion.objects.create(group = gp,question = items)
       gq.save()
     gqs = GroupQuestion.objects.filter(group = gp)
   else:
-    gq = gqs[0]
+    gq = gqs[len(gqs) -1]
     desired_datetime = gq.time
     now = timezone.now()
     if compare_dates(desired_datetime,now):
@@ -89,17 +102,24 @@ def group_question(request,group,username):
           GroupQuestion.objects.filter(group = gp).delete()
           questionattended = Questionattended.objects.filter(group = gp)
           questionattended.delete()
-          question = Question.objects.order_by("?")[:10]
-          for items in question:
+          count = get_count(gp,user,question)
+          question1 = Question.objects.order_by("?")[:count]
+          for items in question1:
             gq = GroupQuestion.objects.create(group = gp,question = items)
             gq.save()
           gqs = GroupQuestion.objects.filter(group = gp)
-  question = []
+    else:
+      ask_question = AskQuestion.objects.filter(group = group)
+      for items in ask_question:
+        try:
+          a = AskQuestionAttended.objects.get(user=user,question = items)
+        except:
+          question.append([items.question,"user"])
   for items in gqs:
     try:
       qat = Questionattended.objects.get(user = user,group = gp,question = items.question)
     except:
-      question.append([items.question.id,items.question.question])
+      question.append([items.question.id,items.question.question,"ik"])
   if question == []:
     return (String(now.minute - desired.minute) + " " + String(now.second - desired.second))
 

@@ -52,6 +52,11 @@ class Questionattended(models.Model):
 
 
 class AskQuestion(models.Model):
+  id = models.UUIDField(default = uuid.uuid4,unique = True,primary_key = True,editable = False)
   group = models.ForeignKey(Group, on_delete = models.CASCADE)
   question = models.CharField(max_length = 200,null = True,blank = True)
   total_members = models.IntegerField(null = True,blank = True)
+
+class AskQuestionAttended(models.Model):
+  user = models.ForeignKey(Profile, on_delete = models.CASCADE)
+  question = models.ForeignKey(AskQuestion, on_delete = models.CASCADE)
