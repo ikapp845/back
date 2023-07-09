@@ -68,7 +68,7 @@ class GroupProfileSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Profile
-    fields = ["id","name","image_url","email","total_likes"]
+    fields = ["name","image_url","email","total_likes"]
 
 class MemberSerializer(serializers.ModelSerializer):
   user = serializers.SerializerMethodField("get_users")
