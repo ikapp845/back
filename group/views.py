@@ -191,10 +191,10 @@ from django.core.cache import cache
 
 @api_view(["GET"])
 def add(request):
-  q = Question.objects.using("question").all()
+  q = []
 
   for items in q:
-    a = Question.objects.create(question = items.question)
+    a = Question.objects.create(question = items)
     a.save()
   return Response("saved")
 

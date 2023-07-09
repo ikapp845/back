@@ -4,10 +4,10 @@ from group.models import Group,AskQuestion
 from question.models import Question
 from datetime import datetime
 from django.utils import timezone
-from django_ulid.models import default,ULIDField
+
 
 class Like(models.Model):
-  id = ULIDField(default=default, primary_key=True, editable=False)
+  id = models.AutoField(primary_key=True,editable=False,unique=True)
   user_from =  models.ForeignKey(Profile,on_delete = models.CASCADE,related_name = "fromuser")
   user_to = models.ForeignKey(Profile,on_delete = models.CASCADE,related_name = "touser")
   group = models.ForeignKey(Group,on_delete = models.CASCADE)
@@ -22,7 +22,7 @@ class Like(models.Model):
 
 
 class AskedLike(models.Model):
-  id = ULIDField(default=default, primary_key=True, editable=False)
+  id = models.AutoField(primary_key=True,editable=False,unique=True)
   user_from =  models.ForeignKey(Profile,on_delete = models.CASCADE,related_name = "fromuserask")
   user_to = models.ForeignKey(Profile,on_delete = models.CASCADE,related_name = "touserask")
   group = models.ForeignKey(Group,on_delete = models.CASCADE)
