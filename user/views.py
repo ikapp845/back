@@ -190,7 +190,7 @@ def verify_token(request):
     if asked_likes[0].time >= time:
       a = True
 
-  return Response({'detail': 'Token is valid',"like":a})
+  return Response({'detail': 'Token is valid',"like":a,"likes":user.total_likes})
 
 
 
