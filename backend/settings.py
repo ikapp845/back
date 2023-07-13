@@ -57,6 +57,7 @@ INSTALLED_APPS = [
 
 
 SIMPLE_JWT = {
+    "TOKEN_OBTAIN_SERIALIZER": "user.serializers.MyTokenObtainPairSerializer",
     'ACCESS_TOKEN_LIFETIME': timedelta(days = 30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=60),
 }
