@@ -4,7 +4,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db import transaction
 from .models import Group,Members,AskQuestion,GroupQuestion
-from question.models import Question
 from django.shortcuts import render
 from user.models import Profile
 from .serializers import GroupQuestionSerializer,MemberSerializer,GroupQuestionSerializer
@@ -16,6 +15,8 @@ from .models import AskQuestion,Report
 import json
 from django.core.cache import cache
 from django.contrib.auth.models import User
+from questions import questions
+import random
 
 
 @api_view(["POST"])
@@ -85,10 +86,10 @@ def compare_dates(desired,now):
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def group_members(request,group):
   group = Group.objects.get(id = group)
-  members = Members.objects.select_related("user","group").filter(group = group)
+  members = Members.objects.prefetch_related("user","group").filter(group = group)
   serializer = MemberSerializer(members,many = True)
   return Response(serializer.data)
 
@@ -97,12 +98,11 @@ def group_members(request,group):
 def group_main(request,group,email):
 
   def group_members(gp):
-    members = Members.objects.select_related("user","group").filter(group = gp)
-    group_length = members.count()
+    members = Members.objects.prefetch_related("user","group").filter(group = gp)
     serializer = MemberSerializer(members,many = True)
-    return serializer.data,group_length
+    return serializer.data
 
-  def group_questions(gp,user,group,group_length):
+  def group_questions(gp,group):
     question_list = GroupQuestion.objects.filter(group = gp)
     now = timezone.now()
     one_hour_ago = now - timezone.timedelta(hours = 1)
@@ -113,13 +113,15 @@ def group_main(request,group,email):
         question_list.delete()
       user_que = AskQuestion.objects.filter(group = gp,time__gt = before)[:10]
       user_que_count = len(user_que)
-      ik_que = Question.objects.filter().order_by("?")[:10-user_que_count]
-      question_list = list(user_que) + list(ik_que)
+      # ik_que = Question.objects.filter().order_by("?")[:10-user_que_count]
+      res = random.sample(list(questions.values()),10-user_que_count)
+      # print(res,ik_key,ik_que)
+      question_list = list(user_que) + list(res)
       a = []
       for items in question_list:
         question = GroupQuestion()
-        question.question_id = items.id
-        question.question = items.question
+        question.question_id = items['id']
+        question.question = items['question']
         question.source = 'user' if isinstance(items, AskQuestion) else 'ik'
         question.group = gp
         a.append(question)
@@ -134,10 +136,8 @@ def group_main(request,group,email):
 
 
   gp =  Group.objects.get(id = group)
-  # user = Profile.objects.get(email = request.user.username)
-  user = Profile.objects.get(email = "9562267229")
-  group_mem,group_length  = group_members(gp)
-  group_ques,time= group_questions(gp,user,group,group_length = group_length)
+  group_mem  = group_members(gp)
+  group_ques,time= group_questions(gp,group)
   final = {"members":group_mem,"questions":group_ques,"time" : time}
   return Response(final)
 

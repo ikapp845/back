@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import GroupQuestion,Members,Group
-from question.models import Question
 from user.models import Profile
 from likes.models import Like,AskedLike
 import pytz
@@ -41,28 +40,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         return False
     except:
       return ""
-
-
-
-
-
-class QuestionSerializer(serializers.ModelSerializer):
-  class Meta:
-    model = Question
-    fields = ["question"]
-
-
-class GroupQuestionSerializer(serializers.ModelSerializer):
-  q = serializers.SerializerMethodField("get_question")
-
-  class Meta:
-    model = GroupQuestion
-    fields = ["q"]
-
-  def get_question(self,groupquestion):
-    qu = groupquestion.question
-    serializer = QuestionSerializer(qu,many = False)
-    return serializer.data
 
 class GroupProfileSerializer(serializers.ModelSerializer):
 
@@ -113,5 +90,7 @@ class GroupQuestionSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = GroupQuestion
-    exclude = ["time","group","id"]
+    fields = ["question","question_id","source"]
+
+
 

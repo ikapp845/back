@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from django.db import transaction
 from .models import Like,AskedLike
 from user.models import Profile
-from question.models import Question
 from .serializer import LikeSerializer,FriendLikeSerializer,FromUserSerializer
 from group.models import Members,Group,AskQuestion
 from datetime import datetime
@@ -14,7 +13,7 @@ from django.db.models import Count, Q, Value,F
 from django.db.models.functions import Coalesce
 
 @api_view(["POST"])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def like(request):
   req = request.data
   username1 = req["username1"]
@@ -22,7 +21,7 @@ def like(request):
   question_id = req["question"]
   profile_qs = Profile.objects.filter(email__in=[username1, username2])
   profiles = {profile.email: profile for profile in profile_qs}
-  question = Question.objects.get(id=question_id)
+  question = question_id
   group = Group.objects.get(id = req["group"])
   members = Members.objects.filter(group = group)
 
@@ -102,43 +101,19 @@ def asked_like(request):
 
 from itertools import chain
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def get_likes(request,username):
-  with transaction.atomic():
-    user = Profile.objects.get(email = username)
-    likes = Like.objects.filter(user_to=user).select_related('group', 'user_to',"question","user_from").order_by("-time")[:100]
-    asked = AskedLike.objects.filter(user_to = user).select_related("group","user_to","question","user_from").order_by("-time")[:50]
-  union = chain(likes,asked)
-  serializer = LikeSerializer(union,many=True)
-
-  return Response(serializer.data)
-
-
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def get_friends_likes(request,username):
-  with transaction.atomic():
-    user = Profile.objects.get(email = username)
-    likes = Like.objects.filter(group__members__user=user).exclude(user_to = user).select_related('group', 'user_to',"question","user_from").order_by("-time")[:30]
-    asked = AskedLike.objects.filter(group__members__user=user).exclude(user_to = user).select_related('group', 'user_to',"question","user_from").order_by("-time")[:30]
-  union = chain(likes,asked)
-  serializer = FriendLikeSerializer(union,many=True)
-
-  return Response(serializer.data)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_likes_data(request):
   with transaction.atomic():
     user = Profile.objects.get(email = request.user.username)
-    likes = Like.objects.filter(user_to=user).select_related('group', 'user_to',"question","user_from").order_by("-time")[:100]
+    likes = Like.objects.filter(user_to=user).select_related('group', 'user_to',"user_from").order_by("-time")[:100]
     asked = AskedLike.objects.filter(user_to = user).select_related("group","user_to","question","user_from").order_by("-time")[:50]
   union = chain(likes,asked)
   serializer1 = LikeSerializer(union,many=True)
 
   with transaction.atomic():
-    likes = Like.objects.filter(group__members__user=user).exclude(user_to = user).select_related('group', 'user_to',"question","user_from").order_by("-time")[:50]
+    likes = Like.objects.filter(group__members__user=user).exclude(user_to = user).select_related('group', 'user_to',"user_from").order_by("-time")[:50]
     asked = AskedLike.objects.filter(group__members__user=user).exclude(user_to = user).select_related('group', 'user_to',"question","user_from").order_by("-time")[:50]
   union = chain(likes,asked)
   serializer2 = FriendLikeSerializer(union,many=True)

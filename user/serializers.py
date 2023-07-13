@@ -21,7 +21,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         data["access"] = str(refresh.access_token)
 
         try:
-
           prof = Profile.objects.get(email = self.user)
           serializer = UserSerializer(prof,many = False)
           data["data"] = serializer.data

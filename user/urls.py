@@ -7,7 +7,6 @@ urlpatterns = [
   path("post/",views.post,name = "Post"),
   path("update_image/",views.update_image,name = "Update image"),
   path("check_username/<str:email>/",views.check_username,name = "Check Username"),
-  path("check_otp/<str:email>/<str:otp>/",views.check_otp,name = "Check OTP"),
   path("get_contacts/",views.get_contacts,name = "Get Contacts"),
   path("get_group_contacts/",views.get_group_contacts,name = "Get Group Contacts"),
   path('token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),

@@ -1,7 +1,6 @@
 from django.db import models
 import uuid
 from user.models import Profile
-from question.models import Question
 import random
 import string
 from datetime import datetime

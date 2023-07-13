@@ -84,20 +84,6 @@ def check_username(request,email):
   print(otp)
   return Response("otp sent")
 
-@api_view(["GET"])
-def check_otp(request,email,otp):
-  response = requests.post("https://ikk.onrender.com/user/token/",data = {"username":email,"password":otp})
-  if response:
-    try:
-      prof = Profile.objects.get(email = email)
-      serializer = UserSerializer(prof,many = False)
-      return Response({"data":serializer.data,"token":response.json()})
-    except:
-      return Response({"token":response.json()})
-  else:
-    return Response("Fail")
-  # return Response(response.json())
-
 
 def clean_phone_number(number_str):
     # Remove "+91" and all spaces from the string
@@ -118,15 +104,6 @@ def edit_numbers(numbers):
             edited_numbers.append(number)
     return edited_numbers
 
-# @api_view(["GET"])
-# @permission_classes([IsAuthenticated])
-# def check_email(request):
-#   try:
-#     user = Profile.objects.get(email = request.user.username)
-#     serializer = UserSerializer(user,many= False)
-#     return Response(serializer.data)
-#   except:
-#     return Response("no user")
 
 import codecs
 

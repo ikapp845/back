@@ -1,7 +1,6 @@
 from django.db import models
 from user.models import Profile
 from group.models import Group,AskQuestion
-from question.models import Question
 from datetime import datetime
 from django.utils import timezone
 
@@ -11,7 +10,7 @@ class Like(models.Model):
   user_from =  models.ForeignKey(Profile,on_delete = models.CASCADE,related_name = "fromuser")
   user_to = models.ForeignKey(Profile,on_delete = models.CASCADE,related_name = "touser")
   group = models.ForeignKey(Group,on_delete = models.CASCADE)
-  question = models.ForeignKey(Question,on_delete = models.CASCADE,null = True)
+  question = models.IntegerField(default = 0,null=False)
   time = models.DateTimeField(default = timezone.now)
   visited = models.BooleanField(default = False,null = True,blank = True)
   source = models.CharField(default = "ik",max_length = 100)

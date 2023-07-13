@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Like
 from group.serializers import ProfileSerializer
 from user.models import Profile
+from questions import questions
 
 
 
@@ -16,7 +17,11 @@ class LikeSerializer(serializers.ModelSerializer):
 
 
   def get_question(self,like):
-    return like.question.question
+    if like.source == "ik":
+      id = like.question
+      return questions[id]["question"]
+    else:
+      return like.question.question
 
 
   def to_username(self,like):
