@@ -25,4 +25,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
           prof = Profile.objects.get(email = self.user)
           serializer = UserSerializer(prof,many = False)
           data["data"] = serializer.data
+        except:
+          pass
         return data 
