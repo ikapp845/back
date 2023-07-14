@@ -42,7 +42,6 @@ class ProfileSerializer(serializers.ModelSerializer):
       return ""
 
 class GroupProfileSerializer(serializers.ModelSerializer):
-
   class Meta:
     model = Profile
     fields = ["name","image_url","email","total_likes"]
@@ -57,7 +56,7 @@ class MemberSerializer(serializers.ModelSerializer):
 
   def get_users(self,member):
     serializer = GroupProfileSerializer(member.user,many = False)
-    if member.group.admin == member.user:
+    if member.group.admin_id == member.user_id:
       new_dict = {"admin":True}
     else:
       new_dict = {"admin": False}
@@ -79,7 +78,8 @@ class UserGroupsSerializer(serializers.ModelSerializer):
   def get_groups(self,member):
     group = member.group
     serializer = GroupSerializertwo(group,many = False)
-    if member.group.admin == member.user:
+
+    if member.group.admin_id == member.user_id:
       new_dict = {"admin":True}
     else:
       new_dict = {"admin": False}

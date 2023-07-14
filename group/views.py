@@ -86,36 +86,32 @@ def compare_dates(desired,now):
 
 
 @api_view(["GET"])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def group_members(request,group):
-  group = Group.objects.get(id = group)
-  members = Members.objects.prefetch_related("user","group").filter(group = group)
+  members = Members.objects.select_related("user","group").filter(group_id = group)
   serializer = MemberSerializer(members,many = True)
   return Response(serializer.data)
 
 @api_view(["GET"])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def group_main(request,group,email):
 
   def group_members(gp):
-    members = Members.objects.prefetch_related("user","group").filter(group = gp)
+    members = Members.objects.select_related("user","group").filter(group_id = gp)
     serializer = MemberSerializer(members,many = True)
     return serializer.data
 
-  def group_questions(gp,group):
-    question_list = GroupQuestion.objects.filter(group = gp)
+  def group_questions(group):
+    question_list = GroupQuestion.objects.filter(group_id = group)
     now = timezone.now()
-    one_hour_ago = now - timezone.timedelta(hours = 1)
-    before = one_hour_ago
+    before = now - timezone.timedelta(hours = 1)
     if not question_list or compare_dates(question_list[len(question_list) - 1].time, now) == True:
       if question_list:
         before = question_list[0].time 
         question_list.delete()
-      user_que = AskQuestion.objects.filter(group = gp,time__gt = before)[:10]
+      user_que = AskQuestion.objects.filter(group_id = group,time__gt = before)[:10]
       user_que_count = len(user_que)
-      # ik_que = Question.objects.filter().order_by("?")[:10-user_que_count]
       res = random.sample(list(questions.values()),10-user_que_count)
-      # print(res,ik_key,ik_que)
       question_list = list(user_que) + list(res)
       a = []
       for items in question_list:
@@ -123,7 +119,7 @@ def group_main(request,group,email):
         question.question_id = items['id']
         question.question = items['question']
         question.source = 'user' if isinstance(items, AskQuestion) else 'ik'
-        question.group = gp
+        question.group_id = group
         a.append(question)
       group_question = GroupQuestion.objects.bulk_create(a,10)
       question_list = group_question
@@ -135,9 +131,8 @@ def group_main(request,group,email):
     
 
 
-  gp =  Group.objects.get(id = group)
-  group_mem  = group_members(gp)
-  group_ques,time= group_questions(gp,group)
+  group_mem  = group_members(group)
+  group_ques,time= group_questions(group)
   final = {"members":group_mem,"questions":group_ques,"time" : time}
   return Response(final)
 
@@ -163,8 +158,7 @@ def leave(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_groups(request,username):
-  user = Profile.objects.get(email= username)
-  members = Members.objects.select_related("group").filter(user = user)
+  members = Members.objects.select_related("group","user").filter(user_id = username).defer("added")
   serializer = UserGroupsSerializer(members,many  = True)
   return Response(serializer.data)
 

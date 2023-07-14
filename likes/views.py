@@ -13,42 +13,38 @@ from django.db.models import Count, Q, Value,F
 from django.db.models.functions import Coalesce
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def like(request):
   req = request.data
   username1 = req["username1"]
   username2 = req["username2"]
-  question_id = req["question"]
-  profile_qs = Profile.objects.filter(email__in=[username1, username2])
-  profiles = {profile.email: profile for profile in profile_qs}
-  question = question_id
+  question = req["question"]
+  user_from,user_to = Profile.objects.filter(email__in=[username1, username2])
   group = Group.objects.get(id = req["group"])
-  members = Members.objects.filter(group = group)
 
   like = Like.objects.create(
-      user_from=profiles[username1],
-      user_to=profiles[username2],
+      user_from_id=username1,
+      user_to_id=username2,
       question=question,
-      group=group,
+      group_id=req["group"],
   )
-  profiles[username2].total_likes = profiles[username2].total_likes + 1
-  profiles[username2].save()
 
-  likes = Like.objects.filter(group=group, question=question)
   result = (
-      likes.values('user_to__name',"user_to__email")
+      Like.objects.filter(group_id=req["group"], question=question)
+      .values('user_to__name',"user_to__email")
       .annotate(count=Count('id'))
       .values('user_to__name','count',"user_to__email")
-      .order_by("-count")
   )
 
+  user_to.total_likes = user_to.total_likes + 1
+
   b = 0
-  a = profiles[username1].coins 
+  a = user_from.coins 
   if result[0]["user_to__email"] == username2:
-    a = profiles[username1].coins + group.count
+    a = user_from.coins + group.count
     b = group.count
-    profiles[username1].coins = a
-    profiles[username1].save()
+    user_from.coins = a
+  Profile.objects.bulk_update([user_to,user_from],["coins","total_likes"])
 
   total = sum(r['count'] for r in result)
   result = {"total": total, **{r['user_to__email']: {"count": r['count']} for r in result},"coins":a,"earned":b}
@@ -85,12 +81,12 @@ def asked_like(request):
       .order_by("-count")
   )
   
-  a = profiles[username1].coins 
+  a = user_from.coins 
   b = 0
   if result[0]["user_to__email"] == username2:
-    a = profiles[username1].coins + group.count
+    a = user_from.coins + group.count
     b = group.count
-    profiles[username1].coins = a
+    user_from.coins = a
     profiles[username1].save()
 
   total = sum(r['count'] for r in result)
