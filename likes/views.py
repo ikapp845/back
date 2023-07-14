@@ -103,7 +103,7 @@ from itertools import chain
 
 
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def get_likes_data(request):
   with transaction.atomic():
     user = Profile.objects.get(email = request.user.username)
