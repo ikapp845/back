@@ -19,7 +19,7 @@ def like(request):
   username1 = req["username1"]
   username2 = req["username2"]
   question = req["question"]
-  user_from,user_to = Profile.objects.filter(email__in=[username1, username2])
+  user_to,user_from = Profile.objects.filter(email__in=[username1, username2])
   group = Group.objects.get(id = req["group"])
 
   like = Like.objects.create(
@@ -58,7 +58,7 @@ def asked_like(request):
   username1 = req["username1"]
   username2 = req["username2"]
   question_id = req["question"]
-  user_from,user_to = Profile.objects.filter(email__in=[username1, username2])
+  user_to,user_from = Profile.objects.filter(email__in=[username1, username2])
   question = AskQuestion.objects.select_related("group").get(id=question_id)
 
   like = AskedLike.objects.create(
