@@ -110,11 +110,9 @@ import codecs
 @api_view(["POST"])
 def get_contacts(request):
   contacts = request.data["contacts"]
-
   contacts = json.loads(contacts)
-
   contacts_edited = edit_numbers(contacts)
-  users_found = Profile.objects.filter(email__in = contacts_edited)
+  users_found = Profile.objects.filter(email__in = contacts_edited).values("email","name","image_url")
   final = []
   for items in users_found:
     image_url = items.image_url.url if items.image_url else None

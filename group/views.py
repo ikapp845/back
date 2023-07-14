@@ -24,12 +24,11 @@ import random
 def create_group(request):
   with transaction.atomic():
     req = request.data
-    user = Profile.objects.get(email = request.user.username)
-    group = Group.objects.create(name= req["name"],admin = user)
+    group = Group.objects.create(name= req["name"],admin_id = request.user.username)
     group.save()
 
     
-    member = Members.objects.create(group = group,user = user)
+    member = Members.objects.create(group = group,user_id = request.user.username)
     member.save()
 
   return Response(group.id)
@@ -39,19 +38,16 @@ def create_group(request):
 @permission_classes([IsAuthenticated])
 def join_group(request):
   req = request.data
-  try:
-    group = Group.objects.get(id = req["group"])
-    user = Profile.objects.get(email= request.user.username)
-  except:
-    return Response("Group does not exist")
 
   try:
-    member = Members.objects.get(group = group,user= user)
-    return Respone("User already in group")
+    member = Members.objects.get(group_id = req["group"],user_id= request.user.username)
+    return Response("User already in group")
   except:
-    member = Members.objects.create(group = group,user = user)
-    member.save()
-    return Response("Success")
+    try:
+      member = Members.objects.create(group_id = req["group"],user_id = request.user.username)
+      return Response("Success")
+    except:
+      return Response("Group does not exist")
 
 
 @api_view(["POST"])
@@ -60,8 +56,7 @@ def add_group_members_contact(request):
     with transaction.atomic():
         contacts = request.data["selected"]
         group = Group.objects.get(id=request.data["group"])
-        users = Profile.objects.filter(email__in=contacts)
-        members = [Members(group=group, user=user) for user in users]
+        members = [Members(group_id = request.data["group"], user_id = user) for user in contacts]
         l = len(members)
         group.count += l
         group.save()
