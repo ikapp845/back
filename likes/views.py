@@ -13,7 +13,7 @@ from django.db.models import Count, Q, Value,F
 from django.db.models.functions import Coalesce
 
 @api_view(["POST"])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def like(request):
   req = request.data
   username1 = req["username1"]
@@ -56,7 +56,7 @@ def like(request):
   return Response(result)
 
 @api_view(["POST"])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def asked_like(request):
   req = request.data
   username1 = req["username1"]
@@ -103,7 +103,7 @@ from itertools import chain
 
 
 @api_view(["GET"])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def get_likes_data(request):
   with transaction.atomic():
     user = Profile.objects.get(email = request.user.username)
