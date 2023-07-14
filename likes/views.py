@@ -58,20 +58,17 @@ def asked_like(request):
   username1 = req["username1"]
   username2 = req["username2"]
   question_id = req["question"]
-  profile_qs = Profile.objects.filter(email__in=[username1, username2])
-  profiles = {profile.email: profile for profile in profile_qs}
+  user_from,user_to = Profile.objects.filter(email__in=[username1, username2])
   question = AskQuestion.objects.select_related("group").get(id=question_id)
-  members = Members.objects.filter(group=question.group)
 
   like = AskedLike.objects.create(
-      user_from=profiles[username1],
-      user_to=profiles[username2],
+      user_from_id=username1,
+      user_to_id=username2,
       question=question,
       group=question.group,
   )
 
-  profiles[username2].total_likes = profiles[username2].total_likes + 1
-  profiles[username2].save()
+  user_to.total_likes = user_to.total_likes + 1
 
   likes = AskedLike.objects.filter(group=question.group, question=question)
   result = (
@@ -87,7 +84,7 @@ def asked_like(request):
     a = user_from.coins + group.count
     b = group.count
     user_from.coins = a
-    profiles[username1].save()
+  Profile.objects.bulk_update([user_to,user_from],["coins","total_likes"])
 
   total = sum(r['count'] for r in result)
   result = {"total": total, **{r['user_to__name']: {"count": r['count']} for r in result},"coins":a,"earned":b}
@@ -102,15 +99,14 @@ from itertools import chain
 @permission_classes([IsAuthenticated])
 def get_likes_data(request):
   with transaction.atomic():
-    user = Profile.objects.get(email = request.user.username)
-    likes = Like.objects.filter(user_to=user).select_related('group', 'user_to',"user_from").order_by("-time")[:100]
-    asked = AskedLike.objects.filter(user_to = user).select_related("group","user_to","question","user_from").order_by("-time")[:50]
+    likes = Like.objects.filter(user_to__email=request.user.username).select_related('group', 'user_to',"user_from").order_by("-time")[:100]
+    asked = AskedLike.objects.filter(user_to__email = request.user.username).select_related("group","user_to","question","user_from").order_by("-time")[:50]
   union = chain(likes,asked)
   serializer1 = LikeSerializer(union,many=True)
 
   with transaction.atomic():
-    likes = Like.objects.filter(group__members__user=user).exclude(user_to = user).select_related('group', 'user_to',"user_from").order_by("-time")[:50]
-    asked = AskedLike.objects.filter(group__members__user=user).exclude(user_to = user).select_related('group', 'user_to',"question","user_from").order_by("-time")[:50]
+    likes = Like.objects.filter(group__members__user__email = request.user.username).exclude(user_to__email = request.user.username).select_related('group', 'user_to',"user_from").order_by("-time")[:50]
+    asked = AskedLike.objects.filter(group__members__user__email = request.user.username).exclude(user_to__email = request.user.username).select_related('group', 'user_to',"question","user_from").order_by("-time")[:50]
   union = chain(likes,asked)
   serializer2 = FriendLikeSerializer(union,many=True)
 
@@ -142,7 +138,6 @@ def get_reveal(request):
   else:
     if like.revealed == False:
       user = Profile.objects.get(email = request.user.username)
-      # user = Profile.objects.get(email = "9562267229")
       if user.coins >= 200:
         user.coins -= 200
         serializer = FromUserSerializer(like.user_from,many = False)

@@ -45,7 +45,11 @@ class FriendLikeSerializer(serializers.ModelSerializer):
     return False
 
   def get_question(self,like):
-    return like.question.question
+    if like.source == "ik":
+      id = like.question
+      return questions[id]["question"]
+    else:
+      return like.question.question
 
 
   def to_username(self,like):
