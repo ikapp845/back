@@ -146,23 +146,23 @@ def get_group_contacts(request):
 
 from django.utils import timezone
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
 def verify_token(request):
 
-  user = Profile.objects.get(email = request.user.username)
+  user = Profile.objects.get(email = "9562267229")
   time = user.last_login
   user.last_login = timezone.now()
   user.save()
 
   a = False
 
-  likes = Like.objects.filter(user_to=user).order_by("-time")
+  likes = Like.objects.filter(user_to=user).order_by("-time")[:1]
   if(likes):
     if likes[0].time >= time:
       a = True
 
-  asked_likes = AskedLike.objects.filter(user_to=user).order_by("-time")
+  asked_likes = AskedLike.objects.filter(user_to=user).order_by("-time")[:1]
   if asked_likes:
     if asked_likes[0].time >= time:
       a = True
