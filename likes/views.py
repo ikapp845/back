@@ -13,15 +13,20 @@ from django.db.models import Count, Q, Value,F
 from django.db.models.functions import Coalesce
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+# @permission_classes([IsAuthenticated])
 def like(request):
   req = request.data
   username1 = req["username1"]
   username2 = req["username2"]
   question = req["question"]
-  user_to,user_from = Profile.objects.filter(email__in=[username1, username2])
-  group = Group.objects.get(id = req["group"])
+  user_to, user_from = Profile.objects.filter(
+      Q(email=username1) | Q(email=username2)
+  ).order_by('email')
 
+  if user_to.email == username1:
+      user_to, user_from = user_from, user_to
+  group = Group.objects.get(id = req["group"])
+  print(user_to,user_from)
   like = Like.objects.create(
       user_from_id=username1,
       user_to_id=username2,
@@ -36,8 +41,9 @@ def like(request):
       .values('user_to__name','count',"user_to__email")
   )
 
+  print(user_to.total_likes)
   user_to.total_likes = user_to.total_likes + 1
-
+  print(user_to.total_likes)
   b = 0
   a = user_from.coins 
   if result[0]["user_to__email"] == username2:
