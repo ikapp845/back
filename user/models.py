@@ -24,6 +24,6 @@ class Profile(models.Model):
   mode = models.BooleanField(default = False)
 
   def __str__(self):
-    return self.email
+    return self.name
 
 # Create your models here.

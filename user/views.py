@@ -147,10 +147,10 @@ def get_group_contacts(request):
 from django.utils import timezone
 
 @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def verify_token(request):
 
-  user = Profile.objects.get(email = "9562267229")
+  user = Profile.objects.get(email = request.user.username)
   time = user.last_login
   user.last_login = timezone.now()
   user.save()
@@ -167,15 +167,10 @@ def verify_token(request):
     if asked_likes[0].time >= time:
       a = True
 
-  return Response({'detail': 'Token is valid',"like":a,"likes":user.total_likes})
+  return Response({'detail': 'Token is valid',"like":a,"likes":user.total_likes,"coins":user.coins})
 
 
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def get_coins(request):
-  user = Profile.objects.get(email = request.user.username)
-  return Response({"user":user.email,"coins":user.coins})
 
 
 

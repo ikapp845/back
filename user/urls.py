@@ -11,6 +11,5 @@ urlpatterns = [
   path("get_group_contacts/",views.get_group_contacts,name = "Get Group Contacts"),
   path('token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair'),
   path('token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
-  path("verify/",views.verify_token,name = "Verify Token"),
-  path("coins/",views.get_coins,name = "Get Coins")
+  path("verify/",views.verify_token,name = "Verify Token")
 ]
