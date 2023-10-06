@@ -200,9 +200,9 @@ STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 AWS_S3_ACCESS_KEY_ID=env('AWS_S3_ACCESS_KEY_ID')
 AWS_S3_SECRET_ACCESS_KEY=env("AWS_S3_SECRET_ACCESS_KEY")
